@@ -1,12 +1,11 @@
 
 1
-00:00:2,000 --> 00:00:6,300
+00:00:02,000 --> 00:00:06,300
 Well, Stephen announce on Friday, We we certainly have a changed strategy.
 
 2
-00:00:6,500 --> 00:00:14,300
-We are going to focus our energy on Microsoft windows phone
- as the central smart phone strategy, 
+00:00:06,500 --> 00:00:14,300
+We are going to focus our energy on Microsoft windows phone as the central smart phone strategy, 
 
 3
 00:00:14,500 --> 00:00:20,300
@@ -18,8 +17,7 @@ We are going to focus our energy on Microsoft windows phone
 
 5
 00:00:24,400 --> 00:00:28,300
-I have seen the device running 
- and it is beautiful and elegant, 
+I have seen the device running and it is beautiful and elegant, 
 
 6
 00:00:28,400 --> 00:00:30,300
@@ -42,9 +40,9 @@ We don¡¯t want ever had happened to us, what is happen just recently which is ge
 ¡­and the smart phone had to turn , you know, to another place to build devices.
 
 11
-00:00:54,000 --> 00:01:2,300
+00:00:54,000 --> 00:01:02,300
 So as we evaluate the feedback from meego, we¡¯re going to consider that feedback and the technologies were in,
 
 12
-00:01:02,400 --> 00:01:8,300
+00:01:02,400 --> 00:01:08,300
 for inclusion our, you know, next generation technologies or platform technologies that we talk about.
