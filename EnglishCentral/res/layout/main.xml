@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent">
+	<SurfaceView android:id="@+id/main_surfaceView"
+		android:layout_width="fill_parent" android:layout_height="fill_parent" />
+	<TextView android:layout_width="wrap_content" android:id="@+id/main_caption_Text"
+		android:layout_height="wrap_content" android:layout_alignParentBottom="true"
+		android:layout_centerHorizontal="true" android:gravity="center" />
+	<LinearLayout android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_alignParentBottom="true"
+		android:layout_centerHorizontal="true" android:orientation="vertical"
+		android:id="@+id/bottom_linear">
+		<LinearLayout android:layout_width="wrap_content"
+			android:layout_height="wrap_content">
+			<Button android:id="@+id/main_play_Button"
+				android:layout_width="150dip" android:layout_height="wrap_content"
+				android:text="@string/play" />
+			<Button android:id="@+id/main_pause_Button"
+				android:layout_width="150dip" android:layout_height="wrap_content"
+				android:text="@string/pause" />
+			<Button android:id="@+id/main_autopause_Button"
+				android:layout_width="150dip" android:layout_height="wrap_content"
+				android:text="auto pause" />
+		</LinearLayout>
+		<ListView android:id="@+id/main_srt_listview"
+			android:visibility="gone" android:layout_width="fill_parent"
+			android:layout_height="200dip" />
+	</LinearLayout>
+</RelativeLayout>
