@@ -1,5 +1,0 @@
-<<<<<<< HEAD
-sdasdasda
-=======
-dsadsa
->>>>>>> fa18baf44334406213b5744fdd6d5f3e7cf6bd48
