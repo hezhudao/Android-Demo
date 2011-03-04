@@ -69,4 +69,7 @@ public class Sentence {
 		return "{" + fromTime + "(" + content + ")" + toTime + "}";
 	}
 
+	public boolean isInTime(long time) {
+		return time >= fromTime && time < toTime;
+	}
 }

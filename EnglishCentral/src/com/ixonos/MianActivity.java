@@ -3,6 +3,7 @@ package com.ixonos;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import SpeechSearch.tar.SSDelegate;
 import android.R.integer;
 import android.app.Activity;
 import android.media.AudioManager;
@@ -43,16 +44,15 @@ public class MianActivity extends Activity implements OnClickListener,
 	private Bundle extras;
 	private Timer timer;
 	private TimerTask timerTask;
-	private ListView mListView;
 	private CaptionsUtil util;
-	private Button mStartButton, mPauseButton;
+	private Button mStartButton, mNextButton, mRecordButton, mPreviousButton;
 	private Button mAutoPauseButton;
-	private LinearLayout mBottomLinearLayout;
 	private TextView mCaptionTextView;
-	private int index = 0;
+	private int index = -1;
 	private Boolean isAutoPause = false;
 	private boolean mIsVideoSizeKnown = false;
 	private boolean mIsVideoReadyToBePlayed = false;
+	private boolean mIsPaused = false;
 
 	private static final String TAG = "MianActivity";
 	private static final String MEDIA = "media";
@@ -65,7 +65,10 @@ public class MianActivity extends Activity implements OnClickListener,
 	private static final int PROGRESS_MSG = 6;
 	private static final int PAUSE_MSG = 7;
 	private static final int HIDDEN_MSG = 8;
-	private ReportProgressThread thread;
+	private static final int CLEAR_CAPTION_MSG = 9;
+
+	// private ReportProgressThread thread;
+	private SSDelegate sDelegate;
 
 	/**
 	 * 
@@ -85,7 +88,6 @@ public class MianActivity extends Activity implements OnClickListener,
 
 		util = new CaptionsUtil(
 				"/sdcard/Nokia CTO Rich Green talks about MeeGo.srt");
-		// mListView.setAdapter(new CaptionsAdapter(this, util.getSentences()));
 	}
 
 	/**
@@ -98,19 +100,21 @@ public class MianActivity extends Activity implements OnClickListener,
 		holder = mPreview.getHolder();
 		holder.addCallback(this);
 		holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-		mListView = (ListView) findViewById(R.id.main_srt_listview);
 		mStartButton = (Button) findViewById(R.id.main_play_Button);
 		mStartButton.setOnClickListener(this);
-		mPauseButton = (Button) findViewById(R.id.main_pause_Button);
-		mPauseButton.setOnClickListener(this);
+		mNextButton = (Button) findViewById(R.id.main_next_Button);
+		mNextButton.setOnClickListener(this);
 		mAutoPauseButton = (Button) findViewById(R.id.main_autopause_Button);
 		mAutoPauseButton.setOnClickListener(this);
-		mBottomLinearLayout = (LinearLayout) findViewById(R.id.bottom_linear);
 		mCaptionTextView = (TextView) findViewById(R.id.main_caption_Text);
+		mRecordButton = (Button) findViewById(R.id.main_record_Button);
+		mRecordButton.setOnClickListener(this);
+		mPreviousButton = (Button) findViewById(R.id.main_previous_Button);
+		mPreviousButton.setOnClickListener(this);
 
-		ViewThread viewThread = new ViewThread();
-		viewThread.setDaemon(true);
-		viewThread.start();
+		TextView main_record_Text = (TextView) findViewById(R.id.main_record_Text);
+		sDelegate = new SSDelegate(this);
+		sDelegate.setView(main_record_Text);
 	}
 
 	private void playVideo(Integer Media) {
@@ -251,13 +255,13 @@ public class MianActivity extends Activity implements OnClickListener,
 		mIsVideoReadyToBePlayed = false;
 		mIsVideoSizeKnown = false;
 
-		if (thread != null) {
-
-			// interrupt thread and clean it task:
-			thread.interrupt();
-		}
-		index = 0;
+		index = -1;
+		mIsPaused = false;
+		isAutoPause = false;
+		mStartButton.setBackgroundDrawable(getResources().getDrawable(
+				R.drawable.play));
 		mCaptionTextView.setText(null);
+		stopProgressUpdate();
 	}
 
 	private void startVideoPlayback() {
@@ -266,13 +270,7 @@ public class MianActivity extends Activity implements OnClickListener,
 
 		mMediaPlayer.start();
 
-		thread = new ReportProgressThread();
-		thread.setDaemon(true);
-		thread.start();
-
-		// mListView.requestFocusFromTouch();
-		// mListView.setSelection(0);
-		// startProgressUpdate();
+		startProgressUpdate();
 	}
 
 	@Override
@@ -280,34 +278,61 @@ public class MianActivity extends Activity implements OnClickListener,
 
 		switch (v.getId()) {
 		case R.id.main_play_Button:
-			mMediaPlayer.start();
-			mIsVideoReadyToBePlayed = true;
-			Log.v(TAG, mMediaPlayer.isPlaying() + "");
+			if (!mIsPaused) {
 
-			thread = new ReportProgressThread();
-			thread.setDaemon(true);
-			thread.start();
-			break;
-		case R.id.main_pause_Button:
-			// mMediaPlayer.pause();
-			Log.v(TAG, mMediaPlayer.isPlaying() + "");
+				mMediaPlayer.pause();
+				mIsPaused = true;
+				mStartButton.setBackgroundDrawable(getResources().getDrawable(
+						R.drawable.pause));
+			} else {
+				mMediaPlayer.start();
+				mIsPaused = false;
+				mStartButton.setBackgroundDrawable(getResources().getDrawable(
+						R.drawable.play));
+			}
+
 			break;
 		case R.id.main_autopause_Button:
 			isAutoPause = !isAutoPause;
 			break;
-		case R.id.main_surfaceView:
+		case R.id.main_previous_Button:
 
-			// set the control linearlayout to a right visibility state:
-			mBottomLinearLayout.setVisibility(mBottomLinearLayout
-					.getVisibility() == View.VISIBLE ? View.INVISIBLE
-					: View.VISIBLE);
-			ViewThread viewThread = new ViewThread();
-			viewThread.setDaemon(true);
-			viewThread.start();
+			index--;
+			if (index < 0)
+				index = 0;
+			seekVideo();
+			break;
+		case R.id.main_next_Button:
+			index++;
+			if (index >= util.getSentences().size())
+				index--;
+			seekVideo();
+			break;
+
+		case R.id.main_record_Button:
+			mMediaPlayer.pause();
+			mIsPaused = true;
+			mStartButton.setBackgroundDrawable(getResources().getDrawable(
+					R.drawable.pause));
+			sDelegate.setmSourceString(util.getSentences().get(index)
+					.getContent());
+			sDelegate.startSearchbyInternet();
 			break;
 		default:
 			break;
 		}
+	}
+
+	/**
+	 * seek the video to a fixed time
+	 */
+	private void seekVideo() {
+		Sentence sentence = util.getSentences().get(index);
+		long fromtime = sentence.getFromTime();
+		mCaptionTextView.setText(sentence.getContent());
+		mMediaPlayer.seekTo((int) fromtime);
+		Log.v(TAG, "index:" + index + " " + sentence.getFromTime()
+				+ mMediaPlayer.getCurrentPosition());
 	}
 
 	private Handler handler = new Handler() {
@@ -321,23 +346,23 @@ public class MianActivity extends Activity implements OnClickListener,
 
 					// auto pause:
 					mMediaPlayer.pause();
+					mIsPaused = true;
+					mStartButton.setBackgroundDrawable(getResources()
+							.getDrawable(R.drawable.play));
 				}
-				if (!isAutoPause
-						&& msg.getData().getInt(CAPTION_MSG) < util
-								.getSentences().size() - 1) {
-
-					// auto play:
-					thread = new ReportProgressThread();
-					thread.setDaemon(true);
-					thread.start();
-				}
-
-				// mListView.requestFocusFromTouch();
-				// mListView.setSelection(msg.what);
+				// Log.v(TAG,
+				// util.getSentences()
+				// .get(msg.getData().getInt(CAPTION_MSG))
+				// .getContent());
 
 				// set the current captions to the caption text;
 				mCaptionTextView.setText(util.getSentences()
 						.get(msg.getData().getInt(CAPTION_MSG)).getContent());
+				break;
+			case CLEAR_CAPTION_MSG:
+
+				// clear the caption text;
+				mCaptionTextView.setText(null);
 				break;
 
 			default:
@@ -349,96 +374,86 @@ public class MianActivity extends Activity implements OnClickListener,
 
 	};
 
-	private class ViewThread extends Thread {
-		@Override
-		public void run() {
-
-			try {
-
-				// sleep current thread 5 seconds:
-				Thread.sleep(5000);
-
-				runOnUiThread(new Runnable() {
-
-					@Override
-					public void run() {
-
-						// hide the control panel:
-						mBottomLinearLayout.setVisibility(View.INVISIBLE);
-					}
-				});
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
-
-	private class ReportProgressThread extends Thread {
-
-		@Override
-		public void run() {
-			Log.v(TAG, "in My Thread");
-
-			final int size = util.getSentences().size();
-			Sentence sentence = util.getSentences().get(index);
-			Log.v(TAG, "getToTime" + sentence.getToTime()
-					+ "sentence.getFromTime:" + sentence.getFromTime());
-			try {
-				if (index == 0) {
-
-					// the video was played:
-					Thread.sleep(sentence.getFromTime());
-				} else {
-
-					// clear the captions text:
-					Thread.sleep(util.getSentences().get(index - 1).getToTime()
-							- util.getSentences().get(index - 1).getFromTime());
-					runOnUiThread(new Runnable() {
-
-						@Override
-						public void run() {
-
-							// clear the caption's text
-							mCaptionTextView.setText(null);
-						}
-					});
-
-					// need to validate the index to let the index not
-					// outofindex and the current thread is in a valid state,
-					// if the video was paused or closed. the index will be set
-					// to zero.
-					if (index > 0)
-						Thread.sleep(sentence.getFromTime()
-								- util.getSentences().get(index - 1)
-										.getToTime());
-				}
-
-				// send a message to main handler to update the captions:
-				Message message = new Message();
-				message.what = PROGRESS_MSG;
-				Bundle data = new Bundle();
-
-				// set the current index into data:
-				data.putInt(CAPTION_MSG, index);
-				message.setData(data);
-				handler.sendMessage(message);
-
-				if (index < size - 1)
-					index++;
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-		}
-	}
-
 	@Override
 	public boolean onError(MediaPlayer mp, int what, int extra) {
 
 		Log.v(TAG, "Error");
 		return false;
+	}
+
+	private void startProgressUpdate() {
+
+		if (null == timer) {
+
+			if (null == timerTask) {
+
+				timerTask = new TimerTask() {
+
+					@Override
+					public void run() {
+
+						try {
+
+							long curent = mMediaPlayer.getCurrentPosition();
+							int indexNow = getNowSentenceIndex(curent);
+
+							if (index != indexNow && indexNow != -1) {
+								Log.v(TAG, "index:" + index + "indexNow:"
+										+ indexNow);
+								// send a message to main handler to update the
+								// captions:
+								Message message = new Message();
+								message.what = PROGRESS_MSG;
+								Bundle data = new Bundle();
+
+								// set the current index into data:
+								data.putInt(CAPTION_MSG, indexNow);
+								message.setData(data);
+								handler.sendMessage(message);
+								index = indexNow;
+							} else if (indexNow == -1 && index != 0) {
+
+								// send a message to main handler to update the
+								// captions:
+								Message message = new Message();
+								message.what = CLEAR_CAPTION_MSG;
+
+								handler.sendMessage(message);
+							}
+						} catch (IllegalStateException e) {
+							// TODO: handle exception
+							e.printStackTrace();
+						}
+					}
+				};
+			}
+
+			timer = new Timer(true);
+			timer.schedule(timerTask, 0, 13); // set timer duration
+		}
+	}
+
+	private int getNowSentenceIndex(long t) {
+
+		for (int i = 0; i < util.getSentences().size(); i++) {
+
+			if (util.getSentences().get(i).isInTime(t)) {
+
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private void stopProgressUpdate() {
+		if (timer != null) {
+			timerTask.cancel();
+			timerTask = null;
+			timer.cancel(); // Cancel timer
+			timer.purge();
+			timer = null;
+			handler.removeMessages(PROGRESS_MSG);
+		}
 	}
 
 }
