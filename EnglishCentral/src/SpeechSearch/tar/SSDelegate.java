@@ -46,7 +46,9 @@ public class SSDelegate {
 	
 	public void setView(TextView aTextView)
 	{
+		testView = null;
 		testView = aTextView;
+		
 	}
 //	class listener implements RecognitionListener {
 //		public void onReadyForSpeech(Bundle params) {
