@@ -37,6 +37,14 @@ public class CaptionsUtil {
 
 	public CaptionsUtil(String filePath) {
 
+		getCaptions(filePath);
+	}
+
+	/**
+	 * getCaptions
+	 * @param filePath
+	 */
+	private void getCaptions(String filePath) {
 		File file = new File(filePath);
 
 		try {

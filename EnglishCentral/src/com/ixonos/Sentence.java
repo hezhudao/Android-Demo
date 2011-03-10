@@ -70,6 +70,6 @@ public class Sentence {
 	}
 
 	public boolean isInTime(long time) {
-		return time >= fromTime && time < toTime;
+		return time > fromTime && time <= toTime;
 	}
 }

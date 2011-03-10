@@ -5,7 +5,7 @@
 	<SurfaceView android:id="@+id/main_surfaceView"
 		android:layout_width="fill_parent" android:layout_height="fill_parent" />
 	<TextView android:layout_width="wrap_content" android:id="@+id/main_caption_Text"
-		android:layout_height="wrap_content" android:layout_alignParentBottom="true"
+		android:layout_height="wrap_content" android:layout_alignParentBottom="true" android:background="#000000"
 		android:layout_centerHorizontal="true" android:gravity="center" />
 	<TextView android:layout_width="wrap_content" android:id="@+id/main_record_Text"
 		android:layout_height="wrap_content" android:layout_alignParentTop="true"

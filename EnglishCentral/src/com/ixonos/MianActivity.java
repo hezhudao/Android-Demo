@@ -6,6 +6,7 @@ import java.util.TimerTask;
 import SpeechSearch.tar.SSDelegate;
 import android.R.integer;
 import android.app.Activity;
+import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -53,22 +54,21 @@ public class MianActivity extends Activity implements OnClickListener,
 	private boolean mIsVideoSizeKnown = false;
 	private boolean mIsVideoReadyToBePlayed = false;
 	private boolean mIsPaused = false;
+	private MediaControlThread mediaControlThread;
+	private SSDelegate sDelegate;
 
 	private static final String TAG = "MianActivity";
-	private static final String MEDIA = "media";
-	private static final String CAPTION_MSG = "CAPTION_MSG";
-	private static final int LOCAL_AUDIO = 1;
-	private static final int STREAM_AUDIO = 2;
-	private static final int RESOURCES_AUDIO = 3;
-	private static final int LOCAL_VIDEO = 4;
-	private static final int STREAM_VIDEO = 5;
-	private static final int PROGRESS_MSG = 6;
-	private static final int PAUSE_MSG = 7;
-	private static final int HIDDEN_MSG = 8;
-	private static final int CLEAR_CAPTION_MSG = 9;
-
-	// private ReportProgressThread thread;
-	private SSDelegate sDelegate;
+	public static final String MEDIA = "media";
+	public static final int LOCAL_AUDIO = 1;
+	public static final int STREAM_AUDIO = 2;
+	public static final int RESOURCES_AUDIO = 3;
+	public static final int LOCAL_VIDEO = 4;
+	public static final int STREAM_VIDEO = 5;
+	public static final int PROGRESS_MSG = 6;
+	public static final int HIDDEN_MSG = 8;
+	public static final int CLEAR_CAPTION_MSG = 9;
+	public static final int PAUSE_MSG = 7;
+	public static final String CAPTION_MSG = "CAPTION_MSG";
 
 	/**
 	 * 
@@ -88,6 +88,19 @@ public class MianActivity extends Activity implements OnClickListener,
 
 		util = new CaptionsUtil(
 				"/sdcard/Nokia CTO Rich Green talks about MeeGo.srt");
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onActivityResult(int, int,
+	 * android.content.Intent)
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// TODO Auto-generated method stub
+		sDelegate.SearchResult(requestCode, resultCode, data);
+		super.onActivityResult(requestCode, resultCode, data);
 	}
 
 	/**
@@ -112,9 +125,8 @@ public class MianActivity extends Activity implements OnClickListener,
 		mPreviousButton = (Button) findViewById(R.id.main_previous_Button);
 		mPreviousButton.setOnClickListener(this);
 
-		TextView main_record_Text = (TextView) findViewById(R.id.main_record_Text);
-		sDelegate = new SSDelegate(this);
-		sDelegate.setView(main_record_Text);
+		sDelegate = new SSDelegate();
+		sDelegate.setView(mCaptionTextView);
 	}
 
 	private void playVideo(Integer Media) {
@@ -231,13 +243,28 @@ public class MianActivity extends Activity implements OnClickListener,
 	@Override
 	protected void onPause() {
 		super.onPause();
-		releaseMediaPlayer();
-		doCleanUp();
+		Log.v(TAG, "onPause");
+		// releaseMediaPlayer();
+		// doCleanUp();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see android.app.Activity#onRestart()
+	 */
+	@Override
+	protected void onRestart() {
+		// TODO Auto-generated method stub
+		super.onRestart();
+		Log.v(TAG, "onRestart");
+
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		Log.v(TAG, "onDestroy");
 		releaseMediaPlayer();
 		doCleanUp();
 	}
@@ -289,34 +316,57 @@ public class MianActivity extends Activity implements OnClickListener,
 				mIsPaused = false;
 				mStartButton.setBackgroundDrawable(getResources().getDrawable(
 						R.drawable.play));
-			}
 
+				if (isAutoPause) {
+					mediaControlThread = new MediaControlThread(util, index,
+							handler, mMediaPlayer.getCurrentPosition());
+					mediaControlThread.start();
+				}
+				startProgressUpdate();
+			}
+			mCaptionTextView.setText(util.getSentences().get(index)
+					.getContent());
 			break;
 		case R.id.main_autopause_Button:
+			if (isAutoPause) {
+
+				mediaControlThread.interrupt();
+			} else {
+				stopProgressUpdate();
+				mediaControlThread = new MediaControlThread(util, index,
+						handler, mMediaPlayer.getCurrentPosition());
+				mediaControlThread.start();
+			}
 			isAutoPause = !isAutoPause;
 			break;
 		case R.id.main_previous_Button:
 
 			index--;
-			if (index < 0)
+			if (index < 0) {
 				index = 0;
-			seekVideo();
+			} else {
+				seekVideo();
+			}
 			break;
 		case R.id.main_next_Button:
 			index++;
-			if (index >= util.getSentences().size())
+			if (index >= util.getSentences().size()) {
 				index--;
-			seekVideo();
+			} else {
+				seekVideo();
+			}
+
 			break;
 
 		case R.id.main_record_Button:
+			Log.v(TAG, mMediaPlayer + "");
 			mMediaPlayer.pause();
 			mIsPaused = true;
 			mStartButton.setBackgroundDrawable(getResources().getDrawable(
 					R.drawable.pause));
 			sDelegate.setmSourceString(util.getSentences().get(index)
 					.getContent());
-			sDelegate.startSearchbyInternet();
+			sDelegate.startSearchbyInternet(this);
 			break;
 		default:
 			break;
@@ -350,21 +400,27 @@ public class MianActivity extends Activity implements OnClickListener,
 					mStartButton.setBackgroundDrawable(getResources()
 							.getDrawable(R.drawable.play));
 				}
-				// Log.v(TAG,
-				// util.getSentences()
-				// .get(msg.getData().getInt(CAPTION_MSG))
-				// .getContent());
 
-				// set the current captions to the caption text;
-				mCaptionTextView.setText(util.getSentences()
-						.get(msg.getData().getInt(CAPTION_MSG)).getContent());
+				if (!isAutoPause) {
+					// set the current captions to the caption text;
+					mCaptionTextView.setText(util.getSentences()
+							.get(msg.getData().getInt(CAPTION_MSG))
+							.getContent());
+				}
 				break;
 			case CLEAR_CAPTION_MSG:
 
 				// clear the caption text;
 				mCaptionTextView.setText(null);
 				break;
+			case PAUSE_MSG:
 
+				stopProgressUpdate();
+				mMediaPlayer.pause();
+				mIsPaused = true;
+				mCaptionTextView.setText(util.getSentences()
+						.get(msg.getData().getInt(CAPTION_MSG)).getContent());
+				break;
 			default:
 				break;
 			}
@@ -418,7 +474,7 @@ public class MianActivity extends Activity implements OnClickListener,
 								Message message = new Message();
 								message.what = CLEAR_CAPTION_MSG;
 
-								handler.sendMessage(message);
+								// handler.sendMessage(message);
 							}
 						} catch (IllegalStateException e) {
 							// TODO: handle exception
