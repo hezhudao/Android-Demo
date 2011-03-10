@@ -296,7 +296,8 @@ public class MianActivity extends Activity implements OnClickListener,
 		holder.setFixedSize(mVideoWidth, mVideoHeight);
 
 		mMediaPlayer.start();
-
+		mStartButton.setBackgroundDrawable(getResources().getDrawable(
+				R.drawable.pause));
 		startProgressUpdate();
 	}
 
@@ -310,12 +311,12 @@ public class MianActivity extends Activity implements OnClickListener,
 				mMediaPlayer.pause();
 				mIsPaused = true;
 				mStartButton.setBackgroundDrawable(getResources().getDrawable(
-						R.drawable.pause));
+						R.drawable.play));
 			} else {
 				mMediaPlayer.start();
 				mIsPaused = false;
 				mStartButton.setBackgroundDrawable(getResources().getDrawable(
-						R.drawable.play));
+						R.drawable.pause));
 
 				if (isAutoPause) {
 					mediaControlThread = new MediaControlThread(util, index,
@@ -324,18 +325,24 @@ public class MianActivity extends Activity implements OnClickListener,
 				}
 				startProgressUpdate();
 			}
-			mCaptionTextView.setText(util.getSentences().get(index)
-					.getContent());
+			if (index > 0)
+				mCaptionTextView.setText(util.getSentences().get(index)
+						.getContent());
 			break;
 		case R.id.main_autopause_Button:
 			if (isAutoPause) {
 
 				mediaControlThread.interrupt();
+				mAutoPauseButton.setBackgroundDrawable(getResources()
+						.getDrawable(R.drawable.auto_play));
 			} else {
 				stopProgressUpdate();
 				mediaControlThread = new MediaControlThread(util, index,
 						handler, mMediaPlayer.getCurrentPosition());
 				mediaControlThread.start();
+
+				mAutoPauseButton.setBackgroundDrawable(getResources()
+						.getDrawable(R.drawable.auto_pause));
 			}
 			isAutoPause = !isAutoPause;
 			break;
@@ -363,7 +370,7 @@ public class MianActivity extends Activity implements OnClickListener,
 			mMediaPlayer.pause();
 			mIsPaused = true;
 			mStartButton.setBackgroundDrawable(getResources().getDrawable(
-					R.drawable.pause));
+					R.drawable.play));
 			sDelegate.setmSourceString(util.getSentences().get(index)
 					.getContent());
 			sDelegate.startSearchbyInternet(this);
@@ -418,6 +425,8 @@ public class MianActivity extends Activity implements OnClickListener,
 				stopProgressUpdate();
 				mMediaPlayer.pause();
 				mIsPaused = true;
+				mStartButton.setBackgroundDrawable(getResources().getDrawable(
+						R.drawable.play));
 				mCaptionTextView.setText(util.getSentences()
 						.get(msg.getData().getInt(CAPTION_MSG)).getContent());
 				break;

@@ -5,21 +5,23 @@
 	<SurfaceView android:id="@+id/main_surfaceView"
 		android:layout_width="fill_parent" android:layout_height="fill_parent" />
 	<TextView android:layout_width="wrap_content" android:id="@+id/main_caption_Text"
-		android:layout_height="wrap_content" android:layout_alignParentBottom="true" android:background="#000000"
-		android:layout_centerHorizontal="true" android:gravity="center" />
+		android:layout_height="wrap_content" android:layout_alignParentBottom="true"
+		android:background="#000000" android:layout_centerHorizontal="true"
+		android:gravity="center" />
 	<TextView android:layout_width="wrap_content" android:id="@+id/main_record_Text"
 		android:layout_height="wrap_content" android:layout_alignParentTop="true"
-		android:layout_centerHorizontal="true" android:gravity="center" android:text="record"/>
+		android:layout_centerHorizontal="true" android:gravity="center"
+		android:text="record" />
 	<SlidingDrawer android:id="@+id/slidingdrawer"
-		android:background="#00000000" android:layout_width="100dip"
+		android:background="#00000000" android:layout_width="80dip"
 		android:layout_height="fill_parent" android:layout_above="@id/main_caption_Text"
 		android:orientation="horizontal" android:handle="@+id/handle"
 		android:layout_alignParentRight="true" android:content="@+id/content">
 		<Button android:id="@+id/handle" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:background="@drawable/handle" />
 		<LinearLayout android:layout_width="wrap_content"
-			android:background="#000000" android:id="@+id/content"
-			android:orientation="vertical" android:layout_height="wrap_content">
+			android:id="@+id/content" android:orientation="vertical"
+			android:layout_height="wrap_content">
 			<Button android:id="@+id/main_play_Button"
 				android:layout_width="50dip" android:layout_height="50dip"
 				android:background="@drawable/play" />
@@ -28,13 +30,13 @@
 				android:background="@drawable/next" />
 			<Button android:id="@+id/main_autopause_Button"
 				android:layout_width="50dip" android:layout_height="50dip"
-				android:background="@drawable/autopause" />
+				android:background="@drawable/auto_play" />
 			<Button android:id="@+id/main_previous_Button"
 				android:layout_width="50dip" android:layout_height="50dip"
 				android:background="@drawable/previous" />
 			<Button android:id="@+id/main_record_Button"
 				android:layout_width="50dip" android:layout_height="50dip"
-				android:background="@drawable/record_normal" />
+				android:background="@drawable/record_pressed" />
 		</LinearLayout>
 	</SlidingDrawer>
 </RelativeLayout>
