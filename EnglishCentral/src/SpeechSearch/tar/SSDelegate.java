@@ -46,7 +46,6 @@ public class SSDelegate {
 	
 	public void setView(TextView aTextView)
 	{
-		testView = null;
 		testView = aTextView;
 		
 	}
