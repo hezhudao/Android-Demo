@@ -135,14 +135,16 @@ public class SSDelegate {
 			boolean aSpecifical) {
 		String resultName[] = null;
 		String sourceName[] = null;
-		boolean resultInclude[];
 		String checkResult;
 		analyString = analyString.toLowerCase();
+		analyString = analyString.replaceAll("[,.]", " ");
 		if (analyString.length() > 0) {
 			resultName = analyString.split(" ");
 		}
 		if (resultName == null)
 			return null;
+		
+		boolean resultInclude[] = new boolean[resultName.length];
 		// resultInclude = new boolean[resultName.length];
 		String tempHtmlString = new String();
 		destString = destString.toLowerCase();
@@ -153,14 +155,20 @@ public class SSDelegate {
 		for (int j = 0; j < resultName.length; j++) {
 
 			for (int i = 0; i < sourceName.length; i++) {
-
 				if (resultName[j].equals(sourceName[i])) {
-					tempHtmlString += "<font color=" + COLORSAME + ">"
-							+ resultName[j] + " </font>";
-				} else
-					tempHtmlString += "<font color=" + COLORDIEFFER + ">"
-							+ resultName[j] + " </font>";
+					resultInclude[j] = true;
+				}
+
 			}
+		}
+		for (int i = 0; i < resultInclude.length; i++) {
+			if (resultInclude[i]) {
+
+				tempHtmlString += "<font color=" + COLORSAME + ">"
+						+ resultName[i] + " </font>";
+			} else
+				tempHtmlString += "<font color=" + COLORDIEFFER + ">"
+						+ resultName[i] + " </font>";
 		}
 		return tempHtmlString;
 	}
@@ -180,7 +188,7 @@ public class SSDelegate {
 			mySpeaking = (String) matches.get(0);
 			Log.v("XXXXXXXXXX", mySpeaking);
 			testView.setText(Html.fromHtml(buildSpeakArray(mSourceString,
-					mySpeaking,true)));
+					mySpeaking, true)));
 
 		}
 
