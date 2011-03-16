@@ -23,7 +23,7 @@ import android.util.Log;
 public class CaptionsUtil {
 
 	private FileReader fileReader;
-	private static final String REGEX_STRING = "\\d\\d:\\d\\d:\\d\\d,\\d\\d\\d --> \\d\\d:\\d\\d:\\d\\d,\\d\\d\\d";
+	private static final String REGEX_STRING = "\\d\\d:\\d\\d:\\d{1,2},\\d\\d\\d --> \\d\\d:\\d\\d:\\d{1,2},\\d\\d\\d";
 	private int second;
 	private int minute;
 	private int hour;
@@ -57,32 +57,32 @@ public class CaptionsUtil {
 
 				if (Pattern.matches(REGEX_STRING, line)) {
 
+					String [] lines= line.split(" --> ");
+					line = lines[0];
 					sentence = new Sentence();
-
-					millsecond = Integer.parseInt(line.substring(9, 12));
-					second = Integer.parseInt(line.substring(6, 8));
-					minute = Integer.parseInt(line.substring(3, 5));
-					hour = Integer.parseInt(line.substring(0, 2));
+					
+					millsecond = Integer.parseInt(line.substring(line.indexOf(",")+1));
+					second = Integer.parseInt(line.substring(line.lastIndexOf(":")+1, line.lastIndexOf(",")));
+					minute = Integer.parseInt(line.substring(line.indexOf(":")+1,line.lastIndexOf(":")));
+					hour = Integer.parseInt(line.substring(0, line.indexOf(":")));
 					times = second + minute * 60 + hour * 3600;
-					Log.v("XXX",
-							"second" + line.substring(6, 8) + " minute"
-									+ line.substring(3, 5) + " hour"
-									+ line.substring(0, 2) + times + "");
-					Log.v("XXX", line);
+
 					sentence.setFromTime(times * 1000 + millsecond);
 
-					millsecond = Integer.parseInt(line.substring(26, 29));
-					second = Integer.parseInt(line.substring(23, 25));
-					minute = Integer.parseInt(line.substring(20, 22));
-					hour = Integer.parseInt(line.substring(17, 19));
+					line = lines[1];
+					millsecond = Integer.parseInt(line.substring(line.indexOf(",")+1));
+					second = Integer.parseInt(line.substring(line.lastIndexOf(":")+1, line.lastIndexOf(",")));
+					minute = Integer.parseInt(line.substring(line.indexOf(":")+1,line.lastIndexOf(":")));
+					hour = Integer.parseInt(line.substring(0, line.indexOf(":")));
 					times = second + minute * 60 + hour * 3600;
 
 					sentence.setToTime(times * 1000 + millsecond);
-					Log.v("XXXXXX", ""+sentence.getToTime());
+					Log.v("XXXXXX", "" + sentence.getFromTime()+" --> "+sentence.getToTime());
 					content = bufferedReader.readLine();
 					sentence.setContent(content);
 
 					sentences.add(sentence);
+					
 				}
 			}
 

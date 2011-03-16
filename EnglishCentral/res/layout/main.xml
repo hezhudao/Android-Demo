@@ -18,7 +18,7 @@
 		android:orientation="horizontal" android:handle="@+id/handle"
 		android:layout_alignParentRight="true" android:content="@+id/content">
 		<Button android:id="@+id/handle" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:background="@drawable/handle" />
+			android:layout_height="wrap_content" android:background="@drawable/ic_dialog_dialer" />
 		<LinearLayout android:layout_width="wrap_content"
 			android:id="@+id/content" android:orientation="vertical"
 			android:layout_height="wrap_content">
@@ -36,7 +36,7 @@
 				android:background="@drawable/previous" />
 			<Button android:id="@+id/main_record_Button"
 				android:layout_width="50dip" android:layout_height="50dip"
-				android:background="@drawable/record_pressed" />
+				android:background="@drawable/ic_btn_speak_now" />
 		</LinearLayout>
 	</SlidingDrawer>
 </RelativeLayout>

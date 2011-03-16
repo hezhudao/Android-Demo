@@ -75,8 +75,8 @@ public class MianActivity extends Activity implements OnClickListener,
 	 * Called when the activity is first created.
 	 */
 	@Override
-	public void onCreate(Bundle icicle) {
-		super.onCreate(icicle);
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
 				WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -265,8 +265,9 @@ public class MianActivity extends Activity implements OnClickListener,
 	protected void onDestroy() {
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
-		releaseMediaPlayer();
+		
 		doCleanUp();
+		releaseMediaPlayer();
 	}
 
 	private void releaseMediaPlayer() {
@@ -459,6 +460,9 @@ public class MianActivity extends Activity implements OnClickListener,
 
 						try {
 
+							if (mMediaPlayer == null)
+								return;
+							
 							long curent = mMediaPlayer.getCurrentPosition();
 							int indexNow = getNowSentenceIndex(curent);
 
