@@ -3,15 +3,12 @@ package SpeechSearch.tar;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
 import android.text.Html;
 import android.util.Log;
-import android.widget.TextView;
+import android.widget.TextSwitcher;
 
 public class SSDelegate {
 
@@ -24,7 +21,7 @@ public class SSDelegate {
 	public static String PACKAGENAME = "com.SpeechSearch.tar.SpeechSearch";
 	private static final int VOICE_RECOGNITION_REQUEST_CODE = 1234;
 
-	private TextView testView;
+	private TextSwitcher testView;
 	private String mSourceString;
 
 	/**
@@ -42,7 +39,7 @@ public class SSDelegate {
 		// listener());
 	}
 
-	public void setView(TextView aTextView) {
+	public void setView(TextSwitcher aTextView) {
 		testView = aTextView;
 
 	}

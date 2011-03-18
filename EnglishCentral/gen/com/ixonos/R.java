@@ -39,7 +39,6 @@ public final class R {
         public static final int content=0x7f050006;
         public static final int handle=0x7f050005;
         public static final int main_autopause_Button=0x7f050009;
-        public static final int main_caption_Text=0x7f050002;
         public static final int main_next_Button=0x7f050008;
         public static final int main_play_Button=0x7f050007;
         public static final int main_previous_Button=0x7f05000a;
@@ -47,6 +46,7 @@ public final class R {
         public static final int main_record_Text=0x7f050003;
         public static final int main_surfaceView=0x7f050001;
         public static final int slidingdrawer=0x7f050004;
+        public static final int tvTextPlayer=0x7f050002;
     }
     public static final class layout {
         public static final int captions_list=0x7f030000;

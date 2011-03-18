@@ -4,7 +4,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import SpeechSearch.tar.SSDelegate;
-import android.R.integer;
 import android.app.Activity;
 import android.content.Intent;
 import android.media.AudioManager;
@@ -14,27 +13,27 @@ import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnVideoSizeChangedListener;
-import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.RemoteException;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewSwitcher;
 
 public class MianActivity extends Activity implements OnClickListener,
 		OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener,
-		OnVideoSizeChangedListener, SurfaceHolder.Callback, OnErrorListener {
+		OnVideoSizeChangedListener, SurfaceHolder.Callback, OnErrorListener ,ViewSwitcher.ViewFactory{
 
 	private int mVideoWidth;
 	private int mVideoHeight;
@@ -48,7 +47,7 @@ public class MianActivity extends Activity implements OnClickListener,
 	private CaptionsUtil util;
 	private Button mStartButton, mNextButton, mRecordButton, mPreviousButton;
 	private Button mAutoPauseButton;
-	private TextView mCaptionTextView;
+	private TextSwitcher mTextPlayer;
 	private int index = -1;
 	private Boolean isAutoPause = false;
 	private boolean mIsVideoSizeKnown = false;
@@ -119,14 +118,21 @@ public class MianActivity extends Activity implements OnClickListener,
 		mNextButton.setOnClickListener(this);
 		mAutoPauseButton = (Button) findViewById(R.id.main_autopause_Button);
 		mAutoPauseButton.setOnClickListener(this);
-		mCaptionTextView = (TextView) findViewById(R.id.main_caption_Text);
 		mRecordButton = (Button) findViewById(R.id.main_record_Button);
 		mRecordButton.setOnClickListener(this);
 		mPreviousButton = (Button) findViewById(R.id.main_previous_Button);
 		mPreviousButton.setOnClickListener(this);
+		mTextPlayer = (TextSwitcher) findViewById(R.id.tvTextPlayer);
+		mTextPlayer.setFactory(this);
+		Animation in = AnimationUtils.loadAnimation(this,
+				android.R.anim.slide_in_left);
+		Animation out = AnimationUtils.loadAnimation(this,
+				android.R.anim.slide_out_right);
+		mTextPlayer.setInAnimation(in);
+		mTextPlayer.setOutAnimation(out);
 
 		sDelegate = new SSDelegate();
-		sDelegate.setView(mCaptionTextView);
+		sDelegate.setView(mTextPlayer);
 	}
 
 	private void playVideo(Integer Media) {
@@ -265,7 +271,7 @@ public class MianActivity extends Activity implements OnClickListener,
 	protected void onDestroy() {
 		super.onDestroy();
 		Log.v(TAG, "onDestroy");
-		
+
 		doCleanUp();
 		releaseMediaPlayer();
 	}
@@ -288,7 +294,7 @@ public class MianActivity extends Activity implements OnClickListener,
 		isAutoPause = false;
 		mStartButton.setBackgroundDrawable(getResources().getDrawable(
 				R.drawable.play));
-		mCaptionTextView.setText(null);
+		mTextPlayer.setText(null);
 		stopProgressUpdate();
 	}
 
@@ -327,8 +333,8 @@ public class MianActivity extends Activity implements OnClickListener,
 				startProgressUpdate();
 			}
 			if (index > 0)
-				mCaptionTextView.setText(util.getSentences().get(index)
-						.getContent());
+				mTextPlayer
+						.setText(util.getSentences().get(index).getContent());
 			break;
 		case R.id.main_autopause_Button:
 			if (isAutoPause) {
@@ -387,7 +393,7 @@ public class MianActivity extends Activity implements OnClickListener,
 	private void seekVideo() {
 		Sentence sentence = util.getSentences().get(index);
 		long fromtime = sentence.getFromTime();
-		mCaptionTextView.setText(sentence.getContent());
+		mTextPlayer.setText(sentence.getContent());
 		mMediaPlayer.seekTo((int) fromtime);
 		Log.v(TAG, "index:" + index + " " + sentence.getFromTime()
 				+ mMediaPlayer.getCurrentPosition());
@@ -411,7 +417,7 @@ public class MianActivity extends Activity implements OnClickListener,
 
 				if (!isAutoPause) {
 					// set the current captions to the caption text;
-					mCaptionTextView.setText(util.getSentences()
+					mTextPlayer.setText(util.getSentences()
 							.get(msg.getData().getInt(CAPTION_MSG))
 							.getContent());
 				}
@@ -419,7 +425,7 @@ public class MianActivity extends Activity implements OnClickListener,
 			case CLEAR_CAPTION_MSG:
 
 				// clear the caption text;
-				mCaptionTextView.setText(null);
+				mTextPlayer.setText(null);
 				break;
 			case PAUSE_MSG:
 
@@ -428,7 +434,7 @@ public class MianActivity extends Activity implements OnClickListener,
 				mIsPaused = true;
 				mStartButton.setBackgroundDrawable(getResources().getDrawable(
 						R.drawable.play));
-				mCaptionTextView.setText(util.getSentences()
+				mTextPlayer.setText(util.getSentences()
 						.get(msg.getData().getInt(CAPTION_MSG)).getContent());
 				break;
 			default:
@@ -462,7 +468,7 @@ public class MianActivity extends Activity implements OnClickListener,
 
 							if (mMediaPlayer == null)
 								return;
-							
+
 							long curent = mMediaPlayer.getCurrentPosition();
 							int indexNow = getNowSentenceIndex(curent);
 
@@ -525,4 +531,10 @@ public class MianActivity extends Activity implements OnClickListener,
 		}
 	}
 
+	@Override
+	public View makeView() {
+		TextView tv = new TextView(this);
+		tv.setTextSize(24);
+		return tv;
+	}
 }
