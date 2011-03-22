@@ -230,7 +230,7 @@ public class MianActivity extends Activity implements OnClickListener,
 	public void onCompletion(MediaPlayer arg0) {
 		Log.d(TAG, "onCompletion called");
 		doCleanUp();
-
+		this.finish();
 	}
 
 	public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
