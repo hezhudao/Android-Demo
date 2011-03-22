@@ -1,12 +1,5 @@
-/**
- * 
- */
-package com.ixonos;
+package com.ixonos.assest;
 
-/**
- * @author jashewe
- * 
- */
 public class Sentence {
 
 	private long fromTime;
@@ -63,7 +56,6 @@ public class Sentence {
 	 * 
 	 * @see java.lang.Object#toString()
 	 */
-	@Override
 	public String toString() {
 
 		return "{" + fromTime + "(" + content + ")" + toTime + "}";

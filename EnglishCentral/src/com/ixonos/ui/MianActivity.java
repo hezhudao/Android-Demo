@@ -1,4 +1,4 @@
-package com.ixonos;
+package com.ixonos.ui;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -6,6 +6,7 @@ import java.util.TimerTask;
 import SpeechSearch.tar.SSDelegate;
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -17,6 +18,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.Display;
+import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -25,15 +28,21 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import com.ixonos.assest.CaptionsUtil;
+import com.ixonos.assest.Sentence;
+import com.ixonos.threads.MediaControlThread;
+
 public class MianActivity extends Activity implements OnClickListener,
 		OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener,
-		OnVideoSizeChangedListener, SurfaceHolder.Callback, OnErrorListener ,ViewSwitcher.ViewFactory{
+		OnVideoSizeChangedListener, SurfaceHolder.Callback, OnErrorListener,
+		ViewSwitcher.ViewFactory {
 
 	private int mVideoWidth;
 	private int mVideoHeight;
@@ -48,6 +57,7 @@ public class MianActivity extends Activity implements OnClickListener,
 	private Button mStartButton, mNextButton, mRecordButton, mPreviousButton;
 	private Button mAutoPauseButton;
 	private TextSwitcher mTextPlayer;
+	private TextView mRecordTextView;
 	private int index = -1;
 	private Boolean isAutoPause = false;
 	private boolean mIsVideoSizeKnown = false;
@@ -100,6 +110,19 @@ public class MianActivity extends Activity implements OnClickListener,
 		// TODO Auto-generated method stub
 		sDelegate.SearchResult(requestCode, resultCode, data);
 		super.onActivityResult(requestCode, resultCode, data);
+
+		mRecordTextView.setText(sDelegate.getAccuration() + "%");
+		mRecordTextView.setTextSize(24);
+		mRecordTextView.setTextColor(Color.BLUE);
+		Display display = getWindowManager().getDefaultDisplay();
+		Animation a = new TranslateAnimation(0.0f, 0.0f, display.getHeight(),
+				0.0f);
+		a.setDuration(1000);
+		a.setStartOffset(1000);
+		a.setFillAfter(true);
+		a.setInterpolator(AnimationUtils.loadInterpolator(this,
+				android.R.anim.bounce_interpolator));
+		mRecordTextView.startAnimation(a);
 	}
 
 	/**
@@ -133,6 +156,9 @@ public class MianActivity extends Activity implements OnClickListener,
 
 		sDelegate = new SSDelegate();
 		sDelegate.setView(mTextPlayer);
+
+		mRecordTextView = (TextView) findViewById(R.id.main_record_Text);
+
 	}
 
 	private void playVideo(Integer Media) {
@@ -534,7 +560,9 @@ public class MianActivity extends Activity implements OnClickListener,
 	@Override
 	public View makeView() {
 		TextView tv = new TextView(this);
+		tv.setGravity(Gravity.CENTER);
 		tv.setTextSize(24);
+		tv.setTextColor(Color.WHITE);
 		return tv;
 	}
 }

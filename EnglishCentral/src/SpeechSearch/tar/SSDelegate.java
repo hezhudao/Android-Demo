@@ -130,9 +130,13 @@ public class SSDelegate {
 
 	public String buildSpeakArray(String analyString, String destString,
 			boolean aSpecifical) {
+
+		int rightwords = 0;
+		accuration = 0;
 		String resultName[] = null;
 		String sourceName[] = null;
 		String checkResult;
+
 		analyString = analyString.toLowerCase();
 		analyString = analyString.replaceAll("[,.]", " ");
 		if (analyString.length() > 0) {
@@ -140,7 +144,7 @@ public class SSDelegate {
 		}
 		if (resultName == null)
 			return null;
-		
+
 		boolean resultInclude[] = new boolean[resultName.length];
 		// resultInclude = new boolean[resultName.length];
 		String tempHtmlString = new String();
@@ -160,14 +164,29 @@ public class SSDelegate {
 		}
 		for (int i = 0; i < resultInclude.length; i++) {
 			if (resultInclude[i]) {
-
+				rightwords++;
+				Log.v(TAG, rightwords + "");
 				tempHtmlString += "<font color=" + COLORSAME + ">"
 						+ resultName[i] + " </font>";
 			} else
 				tempHtmlString += "<font color=" + COLORDIEFFER + ">"
 						+ resultName[i] + " </font>";
 		}
+		if (resultInclude.length > 0) {
+
+			accuration = rightwords * 1.0f / resultInclude.length;
+		} else {
+
+			accuration = 0f;
+		}
 		return tempHtmlString;
+	}
+
+	private float accuration = 0f;
+
+	public float getAccuration() {
+
+		return accuration;
 	}
 
 	public void SearchResult(int requestCode, int resultCode, Intent data) {

@@ -1,7 +1,11 @@
 /**
  * 
  */
-package com.ixonos;
+package com.ixonos.threads;
+
+
+import com.ixonos.assest.CaptionsUtil;
+import com.ixonos.ui.MianActivity;
 
 import android.os.Bundle;
 import android.os.Handler;
