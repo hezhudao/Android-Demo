@@ -8,7 +8,7 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
-		<activity android:name="MianActivity" android:configChanges="keyboard|keyboardHidden"
+		<activity android:name=".MianActivity" android:configChanges="keyboard|keyboardHidden"
 			android:screenOrientation="landscape" />
 	</application>
 	<uses-sdk android:minSdkVersion="4" />

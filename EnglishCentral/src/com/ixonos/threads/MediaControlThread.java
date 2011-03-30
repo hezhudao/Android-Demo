@@ -38,24 +38,24 @@ public class MediaControlThread extends Thread {
 		Log.v("MediaControlThread", ""+mUtil.getSentences().get(mIndex).getToTime()+" "+mCurrentMillSec+" "+mIndex);
 		long sleepMilSec = mUtil.getSentences().get(mIndex+1).getFromTime()
 				- mCurrentMillSec;
-		try {
-
-			if(sleepMilSec>0){
-
-				Thread.sleep(sleepMilSec);
-				Message message = new Message();
-				message.what = MianActivity.PAUSE_MSG;
-				Bundle data = new Bundle();
-
-				// set the current index into data:
-				data.putInt(MianActivity.CAPTION_MSG, mIndex);
-				message.setData(data);
-				mHandler.sendMessage(message);
-			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//
+//			if(sleepMilSec>0){
+//
+//				Thread.sleep(sleepMilSec);
+//				Message message = new Message();
+//				message.what = MianActivity.PAUSE_MSG;
+//				Bundle data = new Bundle();
+//
+//				// set the current index into data:
+//				data.putInt(MianActivity.CAPTION_MSG, mIndex);
+//				message.setData(data);
+//				mHandler.sendMessage(message);
+//			}
+//		} catch (InterruptedException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	private int getNowSentenceIndex(long t) {
 

@@ -4,6 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import SpeechSearch.tar.SSDelegate;
+import android.R.integer;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -63,7 +64,7 @@ public class MianActivity extends Activity implements OnClickListener,
 	private boolean mIsVideoSizeKnown = false;
 	private boolean mIsVideoReadyToBePlayed = false;
 	private boolean mIsPaused = false;
-	private MediaControlThread mediaControlThread;
+	// private MediaControlThread mediaControlThread;
 	private SSDelegate sDelegate;
 
 	private static final String TAG = "MianActivity";
@@ -111,7 +112,7 @@ public class MianActivity extends Activity implements OnClickListener,
 		sDelegate.SearchResult(requestCode, resultCode, data);
 		super.onActivityResult(requestCode, resultCode, data);
 
-		mRecordTextView.setText(sDelegate.getAccuration() + "%");
+		mRecordTextView.setText(sDelegate.getAccuration() * 100 + "%");
 		mRecordTextView.setTextSize(24);
 		mRecordTextView.setTextColor(Color.BLUE);
 		Display display = getWindowManager().getDefaultDisplay();
@@ -334,78 +335,229 @@ public class MianActivity extends Activity implements OnClickListener,
 		startProgressUpdate();
 	}
 
+	private boolean mIsTriggeredByUser = false;
+
 	@Override
 	public void onClick(View v) {
 
 		switch (v.getId()) {
 		case R.id.main_play_Button:
+			if (index >= util.getSentences().size()) {
+				mMediaPlayer.start();
+				return;
+			}
+			stopProgressUpdate();
 			if (!mIsPaused) {
 
+				mIsTriggeredByUser = true;
 				mMediaPlayer.pause();
 				mIsPaused = true;
 				mStartButton.setBackgroundDrawable(getResources().getDrawable(
 						R.drawable.play));
 			} else {
-				mMediaPlayer.start();
+
 				mIsPaused = false;
 				mStartButton.setBackgroundDrawable(getResources().getDrawable(
 						R.drawable.pause));
 
 				if (isAutoPause) {
-					mediaControlThread = new MediaControlThread(util, index,
-							handler, mMediaPlayer.getCurrentPosition());
-					mediaControlThread.start();
+
+					// mediaControlThread = new MediaControlThread(util, index,
+					// handler, mMediaPlayer.getCurrentPosition());
+					// mediaControlThread.start();
+					mTextPlayer.setText(util.getSentences().get(index)
+							.getContent());
+
+					Sentence sentence = util.getSentences().get(index);
+
+					Log.v(TAG,
+							sentence.getFromTime() + ":" + sentence.getToTime()
+									+ " : " + mMediaPlayer.getCurrentPosition()
+									+ "");
+					startAutoPauseTimer(sentence.getToTime()
+							- mMediaPlayer.getCurrentPosition());
+				} else {
+					mTextPlayer.setText(util.getSentences().get(index)
+							.getContent());
+
+					startProgressUpdate();
 				}
-				startProgressUpdate();
+				mMediaPlayer.start();
 			}
-			if (index > 0)
-				mTextPlayer
-						.setText(util.getSentences().get(index).getContent());
+			// if (index > 0 && isAutoPause)
+			// mTextPlayer
+			// .setText(util.getSentences().get(index).getContent());
 			break;
 		case R.id.main_autopause_Button:
+			if (index == -1)
+				return;
 			if (isAutoPause) {
 
-				mediaControlThread.interrupt();
+				// mediaControlThread.interrupt();
 				mAutoPauseButton.setBackgroundDrawable(getResources()
 						.getDrawable(R.drawable.auto_play));
+				stopProgressUpdate();
+				startProgressUpdate();
 			} else {
 				stopProgressUpdate();
-				mediaControlThread = new MediaControlThread(util, index,
-						handler, mMediaPlayer.getCurrentPosition());
-				mediaControlThread.start();
+				Sentence sentence = util.getSentences().get(index);
+				startAutoPauseTimer(sentence.getToTime()
+						- mMediaPlayer.getCurrentPosition());
+				Log.v(TAG, "" + (sentence.getToTime() - sentence.getFromTime())
+						+ "");
+				// mediaControlThread = new MediaControlThread(util, index,
+				// handler, mMediaPlayer.getCurrentPosition());
+				// mediaControlThread.start();
 
 				mAutoPauseButton.setBackgroundDrawable(getResources()
 						.getDrawable(R.drawable.auto_pause));
 			}
 			isAutoPause = !isAutoPause;
+			Log.v(TAG, "" + isAutoPause);
 			break;
 		case R.id.main_previous_Button:
+			// if (!mIsPaused)
+			// index--;
+			// // else if(mIsPaused && !mIsTriggeredByUser){
+			// // index = index - 2;
+			// // }
+			// else {
+			// if (mIsTriggeredByUser)
+			// index = index - 1;
+			// else {
+			// if (index > 1)
+			// index = index - 2;
+			// else
+			// index = 0;
+			// }
+			//
+			// }
+			// Log.v(TAG, "mIsTriggeredByUser" + mIsTriggeredByUser);
+			// // else if (mIsPaused && index > 1)
+			// // index = index - 2;
+			//
+			// if (index < 0) {
+			// index = 0;
+			// } else {
+			// seekVideo();
+			// }
 
-			index--;
+			final int currentIndex = getNowSentenceIndex(mMediaPlayer
+					.getCurrentPosition());
+			// if(util.getSentences().get(index).getFromTime()==util.getSentences().get(currentIndex-1).getFromTime()){
+			// currentIndex--;
+			// }
+			if (currentIndex != -1)
+				index = currentIndex - 1;
+			else {
+				index -= 2;
+			}
 			if (index < 0) {
 				index = 0;
-			} else {
-				seekVideo();
 			}
+			Log.v(TAG, "main_next_Button : " + index + "currentIndex:"
+					+ currentIndex);
+			seekVideo();
+
+			stopProgressUpdate();
+			if (!isAutoPause) {
+
+				startProgressUpdate();
+			} else {
+
+				if (!mIsPaused) {
+					Sentence sentence = util.getSentences().get(index);
+					startAutoPauseTimer(sentence.getToTime()
+							- mMediaPlayer.getCurrentPosition());
+				}
+			}
+
+			// if (mIsPaused)
+			// stopProgressUpdate();
+			// else if (isAutoPause) {
+			// stopProgressUpdate();
+			// Sentence sentence = util.getSentences().get(index);
+			// startAutoPauseTimer(sentence.getToTime()
+			// - mMediaPlayer.getCurrentPosition());
+			// }
 			break;
 		case R.id.main_next_Button:
-			index++;
+			Log.v(TAG, "mIsPaused" + mIsPaused + mIsTriggeredByUser);
+			// if (!mIsPaused)
+			// index++;
+			// else if (mIsTriggeredByUser)
+			// index++;
+			// else if(mIsPaused && !mIsTriggeredByUser && isAutoPause)
+			// index++;
+
+			Log.v(TAG, "main_next_Button : " + index);
+			final int current = getNowSentenceIndex(mMediaPlayer
+					.getCurrentPosition());
+
+			if (current != -1)
+				index = current + 1;
+			// index++;
 			if (index >= util.getSentences().size()) {
 				index--;
 			} else {
+
 				seekVideo();
+				// if (mIsPaused)
+				// stopProgressUpdate();
+				// else if (isAutoPause) {
+				//
+				// stopProgressUpdate();
+				// Sentence sentence = util.getSentences().get(index);
+				// startAutoPauseTimer(sentence.getToTime()
+				// - mMediaPlayer.getCurrentPosition());
+				// }
+
+				stopProgressUpdate();
+				if (!isAutoPause) {
+
+					startProgressUpdate();
+				} else {
+
+					if (!mIsPaused) {
+						Sentence sentence = util.getSentences().get(index);
+						startAutoPauseTimer(sentence.getToTime()
+								- mMediaPlayer.getCurrentPosition());
+					}
+				}
 			}
 
 			break;
 
 		case R.id.main_record_Button:
 			Log.v(TAG, mMediaPlayer + "");
+			if (!mIsPaused)
+				mIsTriggeredByUser = true;
+			stopProgressUpdate();
 			mMediaPlayer.pause();
 			mIsPaused = true;
 			mStartButton.setBackgroundDrawable(getResources().getDrawable(
 					R.drawable.play));
-			sDelegate.setmSourceString(util.getSentences().get(index)
-					.getContent());
+			// if (!isAutoPause)
+			// sDelegate.setmSourceString(util.getSentences().get(index)
+			// .getContent());
+			// else
+			// sDelegate.setmSourceString(util.getSentences().get(index - 1)
+			// .getContent());
+			final int recordIndex = getNowSentenceIndex(mMediaPlayer
+					.getCurrentPosition());
+			Log.v(TAG, "msg" + recordIndex);
+			if (recordIndex != -1)
+
+				sDelegate.setmSourceString(util.getSentences().get(recordIndex)
+						.getContent());
+			else {
+				if (index == util.getSentences().size())
+					sDelegate.setmSourceString(util.getSentences().get(index)
+							.getContent());
+				else
+					sDelegate.setmSourceString(util.getSentences()
+							.get(index - 1 < 0 ? 0 : index - 1).getContent());
+			}
 			sDelegate.startSearchbyInternet(this);
 			break;
 		default:
@@ -419,8 +571,8 @@ public class MianActivity extends Activity implements OnClickListener,
 	private void seekVideo() {
 		Sentence sentence = util.getSentences().get(index);
 		long fromtime = sentence.getFromTime();
-		mTextPlayer.setText(sentence.getContent());
 		mMediaPlayer.seekTo((int) fromtime);
+		mTextPlayer.setText(sentence.getContent());
 		Log.v(TAG, "index:" + index + " " + sentence.getFromTime()
 				+ mMediaPlayer.getCurrentPosition());
 	}
@@ -432,21 +584,34 @@ public class MianActivity extends Activity implements OnClickListener,
 			switch (msg.what) {
 			case PROGRESS_MSG:
 
-				if (mIsVideoReadyToBePlayed && isAutoPause) {
+				if (mIsVideoReadyToBePlayed) {
 
-					// auto pause:
-					mMediaPlayer.pause();
-					mIsPaused = true;
-					mStartButton.setBackgroundDrawable(getResources()
-							.getDrawable(R.drawable.play));
-				}
-
-				if (!isAutoPause) {
-					// set the current captions to the caption text;
 					mTextPlayer.setText(util.getSentences()
 							.get(msg.getData().getInt(CAPTION_MSG))
 							.getContent());
 				}
+
+				// if (mIsVideoReadyToBePlayed && isAutoPause) {
+				// mIsTriggeredByUser = false;
+				// // auto pause:
+				// mMediaPlayer.pause();
+				// mIsPaused = true;
+				// mStartButton.setBackgroundDrawable(getResources()
+				// .getDrawable(R.drawable.play));
+				// }
+				//
+				// if (!isAutoPause) {
+				// // set the current captions to the caption text;
+				// mTextPlayer.setText(util.getSentences()
+				// .get(msg.getData().getInt(CAPTION_MSG))
+				// .getContent());
+				// } else {
+				// mTextPlayer.setText(util.getSentences()
+				// .get(index > 0 ? index : 0).getContent());
+				// // mTextPlayer.setText(util.getSentences()
+				// // .get(msg.getData().getInt(CAPTION_MSG) - 1)
+				// // .getContent());
+				// }
 				break;
 			case CLEAR_CAPTION_MSG:
 
@@ -455,6 +620,7 @@ public class MianActivity extends Activity implements OnClickListener,
 				break;
 			case PAUSE_MSG:
 
+				mIsTriggeredByUser = false;
 				stopProgressUpdate();
 				mMediaPlayer.pause();
 				mIsPaused = true;
@@ -462,6 +628,18 @@ public class MianActivity extends Activity implements OnClickListener,
 						R.drawable.play));
 				mTextPlayer.setText(util.getSentences()
 						.get(msg.getData().getInt(CAPTION_MSG)).getContent());
+				break;
+			case AUTO_PAUSE_MSG:
+				mMediaPlayer.pause();
+				mIsPaused = true;
+				mStartButton.setBackgroundDrawable(getResources().getDrawable(
+						R.drawable.play));
+				Sentence sentence = util.getSentences().get(index - 1);
+				Log.v(TAG,
+						"AUTO_PAUSE_MSG: MP:"
+								+ mMediaPlayer.getCurrentPosition()
+								+ " caption" + sentence.getFromTime() + " "
+								+ sentence.getToTime());
 				break;
 			default:
 				break;
@@ -477,6 +655,56 @@ public class MianActivity extends Activity implements OnClickListener,
 
 		Log.v(TAG, "Error");
 		return false;
+	}
+
+	private static final int AUTO_PAUSE_MSG = 0x10000;
+
+	private void startAutoPauseTimer(final float timerInterval) {
+
+		if (timerInterval < 0)
+			return;
+
+		if (null == timer) {
+
+			if (null == timerTask) {
+
+				timerTask = new TimerTask() {
+
+					@Override
+					public void run() {
+
+						Log.v(TAG,
+								"mMediaPlayer"
+										+ mMediaPlayer.getCurrentPosition()
+										+ "caption:"
+										+ util.getSentences().get(index)
+												.getFromTime());
+						final float timeInterval = util.getSentences()
+								.get(index).getToTime()
+								- mMediaPlayer.getCurrentPosition();
+						if (timeInterval > 0)
+							try {
+								Thread.sleep((long) timeInterval);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
+						index++;
+						if (index >= util.getSentences().size())
+							index--;
+						Message message = new Message();
+						message.what = AUTO_PAUSE_MSG;
+						handler.sendMessage(message);
+					}
+				};
+			}
+
+			timer = new Timer(true);
+			timer.schedule(timerTask, (long) timerInterval, Integer.MAX_VALUE); // set
+																				// timer
+			// duration
+		}
 	}
 
 	private void startProgressUpdate() {
@@ -554,6 +782,9 @@ public class MianActivity extends Activity implements OnClickListener,
 			timer.purge();
 			timer = null;
 			handler.removeMessages(PROGRESS_MSG);
+			handler.removeMessages(AUTO_PAUSE_MSG);
+			handler.removeMessages(PAUSE_MSG);
+			handler.removeMessages(CLEAR_CAPTION_MSG);
 		}
 	}
 
