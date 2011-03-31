@@ -1,10 +1,10 @@
 package com.ixonos.ui;
 
+import java.io.InputStream;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import SpeechSearch.tar.SSDelegate;
-import android.R.integer;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
@@ -38,7 +38,6 @@ import android.widget.ViewSwitcher;
 
 import com.ixonos.assest.CaptionsUtil;
 import com.ixonos.assest.Sentence;
-import com.ixonos.threads.MediaControlThread;
 
 public class MianActivity extends Activity implements OnClickListener,
 		OnBufferingUpdateListener, OnCompletionListener, OnPreparedListener,
@@ -96,8 +95,8 @@ public class MianActivity extends Activity implements OnClickListener,
 
 		setupView();
 
-		util = new CaptionsUtil(
-				"/sdcard/Nokia CTO Rich Green talks about MeeGo.srt");
+		InputStream myfile = getResources().openRawResource(R.raw.iceagesrt);
+		util = new CaptionsUtil(myfile);
 	}
 
 	/*
@@ -112,7 +111,7 @@ public class MianActivity extends Activity implements OnClickListener,
 		sDelegate.SearchResult(requestCode, resultCode, data);
 		super.onActivityResult(requestCode, resultCode, data);
 
-		mRecordTextView.setText(sDelegate.getAccuration() * 100 + "%");
+		mRecordTextView.setText(Math.ceil(sDelegate.getAccuration() * 100) + "%");
 		mRecordTextView.setTextSize(24);
 		mRecordTextView.setTextColor(Color.BLUE);
 		Display display = getWindowManager().getDefaultDisplay();
@@ -207,10 +206,11 @@ public class MianActivity extends Activity implements OnClickListener,
 			}
 
 			// Create a new media player and set the listeners
-			mMediaPlayer = new MediaPlayer();
-			mMediaPlayer.setDataSource(path);
+			// mMediaPlayer = new MediaPlayer();
+			mMediaPlayer = MediaPlayer.create(this, R.raw.iceage);
+			// mMediaPlayer.setDataSource(path);
 			mMediaPlayer.setDisplay(holder);
-			mMediaPlayer.prepare();
+			// mMediaPlayer.prepare();
 			mMediaPlayer.setOnBufferingUpdateListener(this);
 			mMediaPlayer.setOnCompletionListener(this);
 			mMediaPlayer.setOnPreparedListener(this);
@@ -529,6 +529,8 @@ public class MianActivity extends Activity implements OnClickListener,
 			break;
 
 		case R.id.main_record_Button:
+			if (index < 0)
+				return;
 			Log.v(TAG, mMediaPlayer + "");
 			if (!mIsPaused)
 				mIsTriggeredByUser = true;
@@ -569,7 +571,7 @@ public class MianActivity extends Activity implements OnClickListener,
 	 * seek the video to a fixed time
 	 */
 	private void seekVideo() {
-		Sentence sentence = util.getSentences().get(index);
+		Sentence sentence = util.getSentences().get(index < 0 ? 0 : index);
 		long fromtime = sentence.getFromTime();
 		mMediaPlayer.seekTo((int) fromtime);
 		mTextPlayer.setText(sentence.getContent());

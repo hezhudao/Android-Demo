@@ -2,6 +2,7 @@ package SpeechSearch.tar;
 
 import java.util.ArrayList;
 
+import android.R.string;
 import android.app.Activity;
 import android.content.Intent;
 import android.speech.RecognizerIntent;
@@ -202,12 +203,45 @@ public class SSDelegate {
 			String mySpeaking = null;
 
 			mySpeaking = (String) matches.get(0);
-			Log.v("XXXXXXXXXX", mySpeaking);
-			testView.setText(Html.fromHtml(buildSpeakArray(mSourceString,
-					mySpeaking, true)));
+			Log.v("XXXXXXXXXX", matches.toString());
+			// testView.setText(Html.fromHtml(buildSpeakArray(mSourceString,
+			// mySpeaking, true)));
+
+			testView.setText(Html.fromHtml(buildText(matches, mSourceString)));
 
 		}
 
 	}
 
+	private String buildText(ArrayList resultList, String analyString) {
+
+		analyString = analyString.replaceAll("[,.]", " ").toLowerCase();
+		String[] sources = null;
+		if (analyString.length() > 0)
+			sources = analyString.split(" ");
+		String tempHtmlString = new String();
+		int rightwords = 0;
+		accuration = 0;
+
+		for (int i = 0; i < sources.length; i++) {
+
+			for (int j = 0; j < resultList.size(); j++) {
+
+				if (resultList.get(j).toString().indexOf(sources[i]) != -1) {
+
+					rightwords++;
+					tempHtmlString += sources[i] + " ";
+					break;
+				}
+				if (j == resultList.size() - 1) {
+
+					tempHtmlString += "<font color=" + COLORDIEFFER + ">"
+							+ sources[i] + " </font> ";
+				}
+			}
+		}
+		Log.v(TAG, "rightwords"+rightwords);
+		accuration = rightwords * 1.0f / sources.length;
+		return tempHtmlString;
+	}
 }

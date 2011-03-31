@@ -8,6 +8,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -37,21 +39,19 @@ public class CaptionsUtil {
 	private List<Sentence> sentences;
 	private BufferedReader bufferedReader;
 
-	public CaptionsUtil(String filePath) {
+	public CaptionsUtil(InputStream myfile) {
 
-		getCaptions(filePath);
+		getCaptions(myfile);
 	}
 
 	/**
 	 * getCaptions
 	 * @param filePath
 	 */
-	private void getCaptions(String filePath) {
-		File file = new File(filePath);
+	private void getCaptions(InputStream myfile) {
 
 		try {
-			fileReader = new FileReader(file);
-			bufferedReader = new BufferedReader(fileReader);
+			bufferedReader = new BufferedReader((new InputStreamReader(myfile)));
 			String line;
 			sentences = new ArrayList<Sentence>();
 
